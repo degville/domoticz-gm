@@ -1,0 +1,87 @@
+name: domoticz-gm
+base: core18 
+summary: A light-weight home automation system 
+description: |
+    Domoticz is a home automation system that lets you monitor and
+    configure various devices like lights, switches, various
+    sensors/meters like temperature, rain, wind, UV, gas, water
+    and much more. Notifications/alerts can be sent to any mobile device.
+adopt-info: domoticz-gm
+grade: stable
+
+confinement: strict 
+
+apps:
+  domoticz-gm:
+      command: opt/domoticz/domoticz
+          -dbase $SNAP_DATA/domoticz.db
+          -log $SNAP_DATA/domoticz.log
+          -loglevel 1
+          -verbose 1
+          -syslog
+      daemon: simple
+      plugs: [network, network-bind, raw-usb]
+
+parts:
+  boost:
+    source: https://dl.bintray.com/boostorg/release/1.71.0/source/boost_1_71_0.tar.gz 
+    plugin: nil
+    override-build: |
+      ./bootstrap.sh
+      ./b2 stage threading=multi link=static --with-thread --with-system
+      ./b2 install threading=multi link=static --with-thread --with-system
+  openzwave:
+      plugin: make
+      source: https://github.com/OpenZWave/open-zwave.git
+#      source-tag: "v1.6"
+      after:
+          - boost
+      make-parameters:
+          -   PREFIX=/usr
+          -   instlibdir=/usr/lib/x86_64-linux-gnu/
+      build-packages:
+          -   build-essential
+          -   libudev-dev
+  cmake:
+      source: https://github.com/Kitware/CMake
+      source-type: git
+      source-depth: 1
+      plugin: cmake
+      override-build: |
+        mkdir -p build
+        cd build
+        cmake $SNAPCRAFT_PART_SRC
+        make -j 4
+        make install
+  domoticz-gm:
+      plugin: cmake
+      source: https://github.com/domoticz/domoticz.git
+#      source-tag: "4.10717"
+      after:
+          - cmake
+          - boost
+          - openzwave
+      override-pull: |
+          snapcraftctl pull
+          find . -type f -name "*.swp" | xargs rm -rf
+      override-build: |
+          snapcraftctl build
+          snapcraftctl set-version \
+          "$(printf '4.'; grep 'APPVERSION' ../src/appversion.h  | awk '{print $3}')"
+      configflags:
+          - -DCMAKE_BUILD_TYPE=Release
+          - -DCMAKE_INSTALL_PREFIX=/opt/domoticz
+          - -DUSE_STATIC_OPENZWAVE=OFF
+          - -DUSE_PYTHON=yes
+      build-packages:
+          - build-essential
+          - libcurl4-openssl-dev
+          - libssl-dev
+          - libusb-dev
+          - zlib1g-dev
+          - python-dev
+          - python3-dev
+      stage-packages:
+          - libusb-0.1-4
+          - libcurl4-openssl-dev
+
