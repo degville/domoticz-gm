@@ -8,6 +8,8 @@ description: |
     and much more. Notifications/alerts can be sent to any mobile device.
 adopt-info: domoticz-gm
 grade: stable
+architectures:
+  - build-on: [arm64, armhf, amd64, i386]
 
 confinement: strict 
 
@@ -38,7 +40,7 @@ parts:
           - boost
       make-parameters:
           -   PREFIX=/usr
-          -   instlibdir=/usr/lib/x86_64-linux-gnu/
+#          -   instlibdir=/usr/lib/x86_64-linux-gnu/
       build-packages:
           -   build-essential
           -   libudev-dev
@@ -64,6 +66,16 @@ parts:
       override-pull: |
           snapcraftctl pull
           find . -type f -name "*.swp" | xargs rm -rf
+          mkdir -p extern/mosquitto/man
+          touch extern/mosquitto/man/mosquitto.8
+          touch extern/mosquitto/man/mqtt.7
+          touch extern/mosquitto/man/mosquitto-tls.7
+          touch extern/mosquitto/man/mosquitto.conf.5
+          touch extern/mosquitto/man/libmosquitto.3
+          touch extern/mosquitto/man/mosquitto_rr.1
+          touch extern/mosquitto/man/mosquitto_sub.1
+          touch extern/mosquitto/man/mosquitto_pub.1
+          touch extern/mosquitto/man/mosquitto_passwd.1
       override-build: |
           snapcraftctl build
           snapcraftctl set-version \
@@ -81,6 +93,9 @@ parts:
           - zlib1g-dev
           - python-dev
           - python3-dev
+          - liblua5.3-dev
+          - libcereal-dev
+          - uthash-dev
       stage-packages:
           - libusb-0.1-4
           - libcurl4-openssl-dev
