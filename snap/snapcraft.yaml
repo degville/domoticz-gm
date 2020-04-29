@@ -99,4 +99,5 @@ parts:
       stage-packages:
           - libusb-0.1-4
           - libcurl4-openssl-dev
+          - zlib1g
 
