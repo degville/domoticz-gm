@@ -9,7 +9,7 @@ description: |
 adopt-info: domoticz-gm
 grade: stable
 architectures:
-  - build-on: [arm64, armhf, amd64, i386]
+ - build-on: [arm64, armhf, amd64, i386, ppc64el, s390x]  
 
 confinement: strict 
 
@@ -20,6 +20,7 @@ apps:
           -log $SNAP_DATA/domoticz.log
           -loglevel 1
           -verbose 1
+          -noupdates
           -syslog
       daemon: simple
       plugs: [network, network-bind, raw-usb]
