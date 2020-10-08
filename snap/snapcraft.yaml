@@ -15,13 +15,7 @@ confinement: strict
 
 apps:
   domoticz-gm:
-      command: opt/domoticz/domoticz
-          -dbase $SNAP_DATA/domoticz.db
-          -log $SNAP_DATA/domoticz.log
-          -loglevel 1
-          -verbose 1
-          -noupdates
-          -syslog
+      command: bin/domoticz-wrapper
       daemon: simple
       plugs: [network, network-bind, raw-usb]
 
@@ -83,7 +77,7 @@ parts:
           "$(printf '4.'; grep 'APPVERSION' ../src/appversion.h  | awk '{print $3}')"
       configflags:
           - -DCMAKE_BUILD_TYPE=Release
-          - -DCMAKE_INSTALL_PREFIX=/opt/domoticz
+          - -DCMAKE_INSTALL_PREFIX=/opt
           - -DUSE_STATIC_OPENZWAVE=OFF
           - -DUSE_PYTHON=yes
       build-packages:
@@ -102,3 +96,12 @@ parts:
           - libcurl4-openssl-dev
           - zlib1g
 
+  scripts:
+      plugin: dump
+      source: src/utilities
+        
+  hooks:
+      plugin: dump
+      source: src/hooks/
+      organize:
+           bin/: snap/hooks/
