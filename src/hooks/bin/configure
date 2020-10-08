@@ -1,0 +1,61 @@
+#!/bin/sh
+
+# Supported keys:
+# - ports.http (integer)
+#   Port on which the snap will listen for HTTP traffic.
+#
+# - ports.https (integer)
+#   Port on which the snap will listen for HTTPS traffic (only applies if HTTPS
+#   is enabled).
+
+
+. "$SNAP/bin/domoticz-utilities"
+
+handle_domoticz_config()
+{
+	http_port="$(domoticz_http_port)"
+	https_port="$(domoticz_https_port)"
+        loglevel="$(domoticz_loglevel)"
+	previous_http_port="$(domoticz_previous_http_port)"
+	previous_https_port="$(domoticz_previous_https_port)"
+        previous_loglevel="$(domoticz_previous_loglevel)"
+
+	# If no changes were requested, then there's nothing to do here.
+	if [ "$http_port" = "$previous_http_port" ] && [ "$https_port" = "$previous_https_port" ] && [ "$loglevel" = "$previous_loglevel" ]; then
+		return 0
+	fi
+
+	# Validate HTTP port
+	if ! expr "$http_port" : '^[0-9]\+$' > /dev/null; then
+		echo "\"$http_port\" is not a valid HTTP port" >&2
+		return 1
+	fi
+
+	# Validate HTTPS port
+	if ! expr "$https_port" : '^[0-9]\+$' > /dev/null; then
+		echo "\"$https_port\" is not a valid HTTPS port" >&2
+		return 1
+	fi
+
+	# Validate log level
+	if ! expr "$loglevel" : '^[0-9]\+$' > /dev/null; then
+		echo "\"$loglevel\" is not a valid log level" >&2
+		return 1
+	fi
+
+
+	# Set new values. Since snapctl only gives us new values, also keep track
+	# of the current values so we know when they change.
+	domoticz_set_http_port "$http_port"
+	domoticz_set_https_port "$https_port"
+	domoticz_set_previous_http_port "$http_port"
+	domoticz_set_previous_https_port "$https_port"
+        domoticz_set_loglevel "$loglevel"
+        domoticz_set_previous_loglevel "$loglevel"
+
+
+	# Restart Apache to apply new config
+	snapctl restart domoticz-gm
+}
+
+handle_domoticz_config

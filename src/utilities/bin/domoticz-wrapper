@@ -1,0 +1,17 @@
+
+#!/bin/sh
+
+. "$SNAP/bin/domoticz-utilities"
+
+HTTP_PORT="$(domoticz_http_port)"
+HTTPS_PORT="$(domoticz_https_port)"
+LOGLEVEL="$(domoticz_loglevel)"
+
+export HTTP_PORT
+export HTTPS_PORT
+export LOGLEVEL
+
+# Disable shellcheck for quoting params, since we're building a command line
+# and these need to be separated by spaces
+# shellcheck disable=SC2086
+"$SNAP/opt/domoticz" -www "$HTTP_PORT" -sslwww "$HTTPS_PORT" -dbase "$SNAP_DATA/domoticz.db" -log "$SNAP_DATA/domoticz.log" -loglevel "$LOGLEVEL" -verbose 1 -noupdates -syslog -pidfile "$DOMOTICZ_PIDFILE"

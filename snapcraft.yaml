@@ -1,0 +1,107 @@
+name: domoticz-gm
+base: core18 
+summary: A light-weight home automation system 
+description: |
+    Domoticz is a home automation system that lets you monitor and
+    configure various devices like lights, switches, various
+    sensors/meters like temperature, rain, wind, UV, gas, water
+    and much more. Notifications/alerts can be sent to any mobile device.
+adopt-info: domoticz-gm
+grade: stable
+architectures:
+ - build-on: [arm64, armhf, amd64, i386, ppc64el, s390x]  
+
+confinement: strict 
+
+apps:
+  domoticz-gm:
+      command: bin/domoticz-wrapper
+      daemon: simple
+      plugs: [network, network-bind, raw-usb]
+
+parts:
+  boost:
+    source: https://dl.bintray.com/boostorg/release/1.71.0/source/boost_1_71_0.tar.gz 
+    plugin: nil
+    override-build: |
+      ./bootstrap.sh
+      ./b2 stage threading=multi link=static --with-thread --with-system
+      ./b2 install threading=multi link=static --with-thread --with-system
+  openzwave:
+      plugin: make
+      source: https://github.com/OpenZWave/open-zwave.git
+#      source-tag: "v1.6"
+      after:
+          - boost
+      make-parameters:
+          -   PREFIX=/usr
+#          -   instlibdir=/usr/lib/x86_64-linux-gnu/
+      build-packages:
+          -   build-essential
+          -   libudev-dev
+  cmake:
+      source: https://github.com/Kitware/CMake
+      source-type: git
+      source-depth: 1
+      plugin: cmake
+      override-build: |
+        mkdir -p build
+        cd build
+        cmake $SNAPCRAFT_PART_SRC
+        make -j 4
+        make install
+  domoticz-gm:
+      plugin: cmake
+      source: https://github.com/domoticz/domoticz.git
+#      source-tag: "4.10717"
+      after:
+          - cmake
+          - boost
+          - openzwave
+      override-pull: |
+          snapcraftctl pull
+          find . -type f -name "*.swp" | xargs rm -rf
+          mkdir -p extern/mosquitto/man
+          touch extern/mosquitto/man/mosquitto.8
+          touch extern/mosquitto/man/mqtt.7
+          touch extern/mosquitto/man/mosquitto-tls.7
+          touch extern/mosquitto/man/mosquitto.conf.5
+          touch extern/mosquitto/man/libmosquitto.3
+          touch extern/mosquitto/man/mosquitto_rr.1
+          touch extern/mosquitto/man/mosquitto_sub.1
+          touch extern/mosquitto/man/mosquitto_pub.1
+          touch extern/mosquitto/man/mosquitto_passwd.1
+      override-build: |
+          snapcraftctl build
+          snapcraftctl set-version \
+          "$(printf '4.'; grep 'APPVERSION' ../src/appversion.h  | awk '{print $3}')"
+      configflags:
+          - -DCMAKE_BUILD_TYPE=Release
+          - -DCMAKE_INSTALL_PREFIX=/opt
+          - -DUSE_STATIC_OPENZWAVE=OFF
+          - -DUSE_PYTHON=yes
+      build-packages:
+          - build-essential
+          - libcurl4-openssl-dev
+          - libssl-dev
+          - libusb-dev
+          - zlib1g-dev
+          - python-dev
+          - python3-dev
+          - liblua5.3-dev
+          - libcereal-dev
+          - uthash-dev
+      stage-packages:
+          - libusb-0.1-4
+          - libcurl4-openssl-dev
+          - zlib1g
+
+  scripts:
+      plugin: dump
+      source: src/utilities
+        
+  hooks:
+      plugin: dump
+      source: src/hooks/
+      organize:
+           bin/: snap/hooks/

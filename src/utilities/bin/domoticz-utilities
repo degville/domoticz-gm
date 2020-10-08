@@ -1,0 +1,127 @@
+#!/bin/sh
+
+DEFAULT_HTTP_PORT="8080"
+DEFAULT_HTTPS_PORT="443"
+DEFAULT_LOGLEVEL="1"
+
+export DOMOTICZ_PIDFILE="/tmp/pids/httpd.pid"
+
+mkdir -p "$(dirname $DOMOTICZ_PIDFILE)"
+chmod 750 "$(dirname $DOMOTICZ_PIDFILE)"
+
+restart_domoticz_if_running()
+{
+	if domoticz_is_running; then
+		# Restart domoticz by stopping it and letting systemd start it again.
+		pid="$(domoticz_pid)"
+		printf "Restarting domoticz... "
+		while kill -0 "$pid" 2>/dev/null; do
+			sleep 1
+		done
+		printf "done\n"
+	fi
+}
+
+domoticz_is_running()
+{
+	[ -f "$DOMOTICZ_PIDFILE" ]
+}
+
+wait_for_domoticz()
+{
+	wait_for_command "Waiting for Domoticz" domoticz_is_running
+}
+
+domoticz_pid()
+{
+	if domoticz_is_running; then
+		cat "$DOMOTICZ_PIDFILE"
+	else
+		echo "Unable to get Domoticz PID as it's not yet running" >&2
+		echo ""
+	fi
+}
+
+domoticz_http_port()
+{
+	port="$(snapctl get ports.http)"
+	if [ -z "$port" ]; then
+		port="$DEFAULT_HTTP_PORT"
+		domoticz_set_http_port $port
+		domoticz_set_previous_http_port $port
+	fi
+
+	echo "$port"
+}
+
+domoticz_set_http_port()
+{
+	snapctl set ports.http="$1"
+}
+
+domoticz_https_port()
+{
+	port="$(snapctl get ports.https)"
+	if [ -z "$port" ]; then
+		port="$DEFAULT_HTTPS_PORT"
+		domoticz_set_https_port $port
+		domoticz_set_previous_https_port $port
+	fi
+
+	echo "$port"
+}
+
+domoticz_set_https_port()
+{
+	snapctl set ports.https="$1"
+}
+
+domoticz_loglevel()
+{
+	loglevel="$(snapctl get loglevel)"
+	if [ -z "$loglevel" ]; then
+		loglevel="$DEFAULT_LOGLEVEL"
+		domoticz_set_loglevel $loglevel
+		domoticz_set_previous_loglevel $loglevel
+	fi
+
+	echo "$loglevel"
+}
+
+domoticz_set_loglevel()
+{
+	snapctl set loglevel="$1"
+}
+
+
+domoticz_previous_http_port()
+{
+	snapctl get private.ports.http
+}
+
+domoticz_set_previous_http_port()
+{
+	snapctl set private.ports.http="$1"
+}
+
+domoticz_previous_https_port()
+{
+	snapctl get private.ports.https
+}
+
+domoticz_set_previous_https_port()
+{
+	snapctl set private.ports.https="$1"
+}
+
+domoticz_previous_loglevel()
+{
+	snapctl get private.loglevel
+}
+
+domoticz_set_previous_loglevel()
+{
+	snapctl set private.loglevel="$1"
+}
+
+
