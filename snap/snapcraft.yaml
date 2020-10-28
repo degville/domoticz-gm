@@ -17,7 +17,7 @@ apps:
   domoticz-gm:
       command: bin/domoticz-wrapper
       daemon: simple
-      plugs: [network, network-bind, home]
+      plugs: [network, network-bind, home, raw-usb]
 
 parts:
   boost:
