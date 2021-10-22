@@ -21,7 +21,7 @@ apps:
 
 parts:
   boost:
-    source: https://dl.bintray.com/boostorg/release/1.71.0/source/boost_1_71_0.tar.gz 
+    source: https://boostorg.jfrog.io/artifactory/main/release/1.71.0/source/boost_1_71_0.tar.gz 
     plugin: nil
     override-build: |
       ./bootstrap.sh
@@ -91,6 +91,7 @@ parts:
           - liblua5.3-dev
           - libcereal-dev
           - uthash-dev
+          - libsqlite3-dev
       stage-packages:
           - libusb-0.1-4
           - libcurl4-openssl-dev
