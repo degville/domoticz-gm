@@ -9,7 +9,8 @@ description: |
 adopt-info: domoticz-gm
 grade: stable
 architectures:
- - build-on: [arm64, armhf, amd64]  
+  - arm64
+  - amd64
 
 confinement: strict 
 
