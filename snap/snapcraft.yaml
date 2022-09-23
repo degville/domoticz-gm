@@ -1,5 +1,5 @@
 name: domoticz-gm
-base: core18 
+base: core20
 summary: A light-weight home automation system 
 description: |
     Domoticz is a home automation system that lets you monitor and
@@ -9,7 +9,7 @@ description: |
 adopt-info: domoticz-gm
 grade: stable
 architectures:
- - build-on: [arm64, armhf, amd64, i386, ppc64el, s390x]  
+ - build-on: [arm64, armhf, amd64]  
 
 confinement: strict 
 
@@ -75,7 +75,7 @@ parts:
           snapcraftctl build
           snapcraftctl set-version \
           "$(printf '4.'; grep 'APPVERSION' ../src/appversion.h  | awk '{print $3}')"
-      configflags:
+      cmake-parameters:
           - -DCMAKE_BUILD_TYPE=Release
           - -DCMAKE_INSTALL_PREFIX=/opt
           - -DUSE_STATIC_OPENZWAVE=OFF
