@@ -8,9 +8,11 @@ description: |
     and much more. Notifications/alerts can be sent to any mobile device.
 adopt-info: domoticz-gm
 grade: stable
+
 architectures:
-architectures:
-  - build-on: amd64
+- build-on: amd64
+- build-on: arm64
+- build-on: armhf
 
 confinement: strict 
 
