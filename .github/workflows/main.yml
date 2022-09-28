@@ -12,8 +12,6 @@ jobs:
       matrix:
         platform:
         - amd64
-        - armhf
-        - arm64
 
     steps:
     - uses: actions/checkout@v3
