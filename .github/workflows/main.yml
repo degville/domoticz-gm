@@ -11,7 +11,7 @@ jobs:
     strategy:
       matrix:
         platform:
-        - arm64
+        - armhf
 
     steps:
     - uses: actions/checkout@v3
