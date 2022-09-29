@@ -89,7 +89,6 @@ parts:
           - libssl-dev
           - libusb-dev
           - zlib1g-dev
-          - python-dev
           - python3-dev
           - liblua5.3-dev
           - libcereal-dev
